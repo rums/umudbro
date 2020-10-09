@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 
 import 'package:umudbro/terminal.dart';
 
 import 'add_server.dart';
-
-Socket socket;
 
 void main() {
   runApp(MyApp());

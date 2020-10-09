@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'dart:async';
 
 import 'package:umudbro/terminal.dart';
 
@@ -58,7 +57,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
   void _showAddServer() {
     showDialog(
@@ -66,33 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context) {
           return Card(child: AddServer());
         });
-  }
-
-  void dataHandler(data) {
-    print(new String.fromCharCodes(data).trim());
-  }
-
-  void errorHandler(error, StackTrace trace) {
-    print(error);
-  }
-
-  void doneHandler() {
-    socket.destroy();
-  }
-
-  void _startSocket() {
-    setState(() {
-      Socket.connect("192.168.254.11", 4567).then((Socket sock) {
-        socket = sock;
-        socket.listen(dataHandler,
-            onError: errorHandler, onDone: doneHandler, cancelOnError: false);
-      }).catchError((e, StackTrace trace) {
-        print("Unable to connect: $e");
-      });
-      //Connect standard in to the socket
-      stdin.listen(
-          (data) => socket.write(new String.fromCharCodes(data).trim() + '\n'));
-    });
   }
 
   @override

@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[Terminal(server: '192.168.254.11', port: 4567)],
+          children: <Widget>[Terminal(server: 'discworld.starturtle.net', port: 4242)],
         ),
       ),
       floatingActionButton: FloatingActionButton(

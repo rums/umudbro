@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:umudbro/terminal.dart';
-
 import 'add_server.dart';
 
 void main() {

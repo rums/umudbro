@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-Socket socket;
+import 'package:umudbro/blocs/blocs.dart';
 
 class Terminal extends StatelessWidget {
   Terminal({Key key, this.buffer}) : super(key: key);
@@ -9,6 +9,11 @@ class Terminal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-          return Text(buffer.join("\n"));
+    return BlocBuilder<TerminalBloc, TerminalState>(
+      builder: (context, state) {
+        return Text(state.buffer.join("\n"));
+      },
+    );
   }
+
 }

@@ -7,7 +7,7 @@ import 'package:umudbro/repositories/umudbro_repository.dart';
 import 'servers.dart';
 
 class ServersBloc extends Bloc<ServersEvent, ServersState> {
-  ServersBloc({@required this.umudbroRepository}) : super(InitialServersState());
+  ServersBloc({@required this.umudbroRepository}) : super(InitialServersState(new List<Server>()));
 
   final UmudbroRepository umudbroRepository;
 
@@ -16,15 +16,12 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     if (event is ServersLoaded) {
       yield* _mapServersLoadedToState();
     }
-    else if (event is ServerAddedEvent) {
-      Server server = new Server(address: event.address, port: event.port);
-      _saveServer(server);
-      yield ServerAddedState(server);
+    else if (event is ServerAdded) {
+      yield* _mapServerAddedToState(event);
     }
-  }
-
-  Future _saveServer(Server server) {
-    return umudbroRepository.addServer(server);
+    else if (event is ServerDeleted) {
+      yield* _mapServerDeletedToState(event);
+    }
   }
 
   Stream<ServersState> _mapServersLoadedToState() async* {
@@ -36,5 +33,32 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     }
     catch (e) {
     }
+  }
+
+  Stream<ServersState> _mapServerAddedToState(ServerAdded event) async* {
+    if (state is ServersLoadSuccess) {
+      final List<Server> updatedServers =
+          List.from((state as ServersLoadSuccess).servers)..add(event.server);
+      _saveServer(event.server);
+      yield ServersLoadSuccess(updatedServers);
+    }
+  }
+
+  Stream<ServersState> _mapServerDeletedToState(ServerDeleted event) async* {
+    if (state is ServersLoadSuccess) {
+      final List<Server> updatedServers =
+      (state as ServersLoadSuccess).servers
+        .where((server) => server.id != event.server.id).toList();
+      _deleteServer(event.server);
+      yield ServersLoadSuccess(updatedServers);
+    }
+  }
+
+  Future _saveServer(Server server) {
+    return umudbroRepository.addServer(server);
+  }
+
+  Future _deleteServer(Server server) {
+    return umudbroRepository.deleteServer(server);
   }
 }

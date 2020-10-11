@@ -11,10 +11,17 @@ class SqliteUmudbroRepository implements UmudbroRepository {
       join(path, 'umudbro_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          "CREATE TABLE servers(id INTEGER PRIMARY KEY, address TEXT, port INTEGER)",
+          "CREATE TABLE servers(id INTEGER PRIMARY KEY, name TEXT, address TEXT, port INTEGER)",
         );
       },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) {
+        if (oldVersion == 1 && newVersion == 2) {
+          return db.execute(
+              "ALTER TABLE servers ADD COLUMN name text;"
+          );
+        }
+      },
+      version: 2,
     );
   });
 
@@ -29,9 +36,13 @@ class SqliteUmudbroRepository implements UmudbroRepository {
   }
 
   @override
-  Future<void> deleteServer(Server server) {
-    // TODO: implement deleteServer
-    throw UnimplementedError();
+  Future<void> deleteServer(Server server) async {
+    final Database db = await database;
+    await db.delete(
+      'servers',
+      where: "id = ?",
+      whereArgs: [server.id],
+    );
   }
 
   @override

@@ -14,14 +14,32 @@ class Servers extends StatelessWidget {
             itemCount: servers.length,
             itemBuilder: (context, index) {
               final Server server = servers[index];
-              return Text("Address: ${server.address}, Port: ${server.port}");
+              return Card(
+                  child: PopupMenuButton(
+                      onSelected: (value) {
+                        if (value == "delete") {
+                          BlocProvider.of<ServersBloc>(context)..add(ServerDeleted(server));
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          value: "delete",
+                          child: Row(children: <Widget>[
+                            Icon(Icons.delete),
+                            Text("Delete"),
+                          ]),
+                        )
+                      ],
+                      child: ListTile(
+                          title: Text("Address: ${server.address}, Port: ${server.port}"))));
             },
           );
-        }
-        else {
+        } else {
           BlocProvider.of<ServersBloc>(context).add(ServersLoaded());
         }
-        return Card(child: Text('Loading...'),);
+        return Card(
+          child: Text('Loading...'),
+        );
       },
     );
   }

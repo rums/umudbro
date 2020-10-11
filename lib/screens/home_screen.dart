@@ -1,26 +1,29 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
 
-Socket socket;
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:umudbro/blocs/terminal/terminal.dart';
 
-class Terminal extends StatefulWidget {
-  Terminal({Key key, this.server, this.port}) : super(key: key);
+import '../widgets/terminal.dart';
+
+class HomeScreen extends StatefulWidget {
   final String server;
   final int port;
 
+  HomeScreen({Key key, this.server, this.port}) : super(key: key);
+
   @override
-  _TerminalState createState() => _TerminalState();
+  _HomeScreen createState() => _HomeScreen();
 }
 
-class _TerminalState extends State<Terminal> {
-  String _output;
+class _HomeScreen extends State<HomeScreen> {
+  Socket socket;
+  TerminalBloc _terminalBloc;
 
   void dataHandler(data) {
     String out = new String.fromCharCodes(data).trim();
-    print(new String.fromCharCodes(data).trim());
-    setState(() {
-      _output = "$_output\n$out";
-    });
+    print(out);
+    _terminalBloc.add(TerminalDataReceived(out));
   }
 
   void errorHandler(error, StackTrace trace){
@@ -33,6 +36,7 @@ class _TerminalState extends State<Terminal> {
 
   void _startSocket(server, port) {
     setState(() {
+      try {
       Socket.connect(server, port).then((Socket sock) {
         socket = sock;
         socket.listen(dataHandler,
@@ -44,27 +48,25 @@ class _TerminalState extends State<Terminal> {
       });
       //Connect standard in to the socket
       stdin.listen((data) => socket.write(new String.fromCharCodes(data).trim() + '\n'));
-    });
+    }
+    catch (e) {
+    }});
   }
 
   @protected
   @mustCallSuper
   void initState() {
     super.initState();
-    this._output = "";
+    _terminalBloc = BlocProvider.of<TerminalBloc>(context);
     this._startSocket(widget.server, widget.port);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Text(
-      '$_output'
+    return BlocBuilder<TerminalBloc, TerminalState>(
+      builder: (context, state) {
+        return Terminal(buffer: state.buffer);
+        },
     );
   }
 }

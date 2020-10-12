@@ -11,6 +11,10 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
 
   final UmudbroRepository umudbroRepository;
 
+  Future<Server> getActiveServer() async {
+    return umudbroRepository.server(doConnect: 1);
+  }
+  
   @override
   Stream<ServersState> mapEventToState(ServersEvent event) async* {
     if (event is ServersLoaded) {
@@ -21,6 +25,12 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     }
     else if (event is ServerDeleted) {
       yield* _mapServerDeletedToState(event);
+    }
+    else if (event is ServerUpdated) {
+      yield* _mapServerUpdatedToState(event);
+    }
+    else if (event is ServerConnected) {
+      yield* _mapServerConnectedToState(event);
     }
   }
 
@@ -39,7 +49,7 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     if (state is ServersLoadSuccess) {
       final List<Server> updatedServers =
           List.from((state as ServersLoadSuccess).servers)..add(event.server);
-      _saveServer(event.server);
+      await _addServer(event.server);
       yield ServersLoadSuccess(updatedServers);
     }
   }
@@ -54,8 +64,34 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     }
   }
 
-  Future _saveServer(Server server) {
+  Stream<ServersState> _mapServerUpdatedToState(ServerUpdated event) async* {
+    if (state is ServersLoadSuccess) {
+      final List<Server> updatedServers =
+      (state as ServersLoadSuccess).servers.map((server) {
+        return server.id == event.server.id ? event.server : server;
+      }).toList();
+      await _updateServer(event.server);
+      yield ServersLoadSuccess(updatedServers);
+    }
+  }
+
+  Stream<ServersState> _mapServerConnectedToState(ServerConnected event) async* {
+    if (state is ServersLoadSuccess) {
+      final List<Server> updatedServers =
+      (state as ServersLoadSuccess).servers.map((server) {
+        return server.id == event.server.id ? event.server : server;
+      }).toList();
+      await _updateServer(event.server);
+      yield ServerConnectionRequested(event.server, updatedServers);
+    }
+  }
+
+  Future _addServer(Server server) {
     return umudbroRepository.addServer(server);
+  }
+
+  Future _updateServer(Server server) {
+    return umudbroRepository.updateServer(server);
   }
 
   Future _deleteServer(Server server) {

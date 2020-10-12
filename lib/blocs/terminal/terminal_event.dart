@@ -1,12 +1,13 @@
+import 'package:umudbro/models/models.dart';
+
 abstract class TerminalEvent {
   const TerminalEvent();
 }
 
 class TerminalInitialized extends TerminalEvent {
-  final String address;
-  final int port;
+  final Server server;
 
-  TerminalInitialized({this.address = "192.168.254.11", this.port = 4242});
+  TerminalInitialized({this.server});
 }
 
 class TerminalDataReceived extends TerminalEvent {

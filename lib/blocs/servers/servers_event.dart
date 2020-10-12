@@ -16,4 +16,16 @@ class ServerDeleted extends ServersEvent {
   ServerDeleted(this.server);
 }
 
+class ServerUpdated extends ServersEvent {
+  final Server server;
+
+  ServerUpdated(this.server);
+}
+
 class ServersLoaded extends ServersEvent {}
+
+class ServerConnected extends ServersEvent {
+  final Server server;
+
+  ServerConnected(this.server);
+}

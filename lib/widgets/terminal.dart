@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 import 'package:umudbro/blocs/blocs.dart';
 
@@ -11,9 +12,8 @@ class Terminal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<TerminalBloc, TerminalState>(
       builder: (context, state) {
-        return Text(state.buffer.join("\n"));
+        return Markdown(shrinkWrap: true, data: state.buffer.join("\n\n"));
       },
     );
   }
-
 }

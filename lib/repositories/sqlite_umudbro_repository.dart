@@ -11,28 +11,26 @@ class SqliteUmudbroRepository implements UmudbroRepository {
       join(path, 'umudbro_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          "CREATE TABLE servers(id INTEGER PRIMARY KEY, name TEXT, address TEXT, port INTEGER)",
+          "CREATE TABLE servers(id INTEGER PRIMARY KEY, name TEXT, address TEXT, port INTEGER, do_connect INTEGER)",
         );
       },
       onUpgrade: (db, oldVersion, newVersion) {
         if (oldVersion == 1 && newVersion == 2) {
-          return db.execute(
-              "ALTER TABLE servers ADD COLUMN name text;"
-          );
+          return db.execute("ALTER TABLE servers ADD COLUMN name text;");
+        } else if (oldVersion == 2 && newVersion == 3) {
+          return db
+              .execute("ALTER TABLE servers ADD COLUMN do_connect INTEGER");
         }
       },
-      version: 2,
+      version: 3,
     );
   });
 
   @override
   Future<void> addServer(Server server) async {
     final Database db = await database;
-    await db.insert(
-      'servers',
-      server.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace
-    );
+    await db.insert('servers', server.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   @override
@@ -51,10 +49,11 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     final List<Map<String, dynamic>> maps = await db.query('servers');
     yield List.generate(maps.length, (i) {
       return Server(
-        id: maps[i]['id'],
-        address: maps[i]['address'],
-        port: maps[i]['port'],
-      );
+          id: maps[i]['id'],
+          name: maps[i]['name'],
+          address: maps[i]['address'],
+          port: maps[i]['port'],
+          doConnect: maps[i]['do_connect'] == 1);
     });
   }
 
@@ -68,4 +67,18 @@ class SqliteUmudbroRepository implements UmudbroRepository {
       where: "id = ?",
       whereArgs: [server.id],
     );
-  }}
+  }
+
+  @override
+  Future<Server> server({id, name, address, port, doConnect}) async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query("servers",
+        where: "id = ? or name = ? or address = ? or port = ? or doConnect = ?",
+        whereArgs: [id, name, address, port, doConnect]);
+    if (maps.length > 0) {
+      return Server.fromMap(maps.first);
+    }
+    return null;
+  }
+}

@@ -8,6 +8,6 @@ class TerminalInitial extends TerminalState {
       : super(buffer: new List<String>());
 }
 
-class TerminalBuffer extends TerminalState {
-  TerminalBuffer(List<String> buffer) : super(buffer: buffer);
+class TerminalActive extends TerminalState {
+  TerminalActive(List<String> buffer) : super(buffer: buffer);
 }

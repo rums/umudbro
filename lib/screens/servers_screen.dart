@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:umudbro/blocs/blocs.dart';
-import 'package:umudbro/repositories/sqlite_umudbro_repository.dart';
 import 'package:umudbro/widgets/widgets.dart';
 
 class ServersScreen extends StatefulWidget {
@@ -12,20 +11,13 @@ class ServersScreen extends StatefulWidget {
 class _ServersScreenState extends State<ServersScreen> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ServersBloc(umudbroRepository: new SqliteUmudbroRepository())..add(ServersLoaded()),
-      child: Scaffold(
+    return BlocBuilder<ServersBloc, ServersState>(
+      builder: (context, state) => Scaffold(
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
           title: Text("Servers"),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pushNamed(context, '/'); },
-            )
-          ],
+          actions: [],
         ),
         body: Center(
           // Center is a layout widget. It takes a single child and positions it
@@ -34,17 +26,11 @@ class _ServersScreenState extends State<ServersScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            final result = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext context) {
-                return BlocProvider(
-                  create: (context) => ServersBloc(umudbroRepository: new SqliteUmudbroRepository())..add(ServersLoaded()),
-                  child: AddServer(),
-                );
-              });
-            if (result) {
-              setState(() => {});
-            }
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddServer();
+                });
           },
           tooltip: 'Add server',
           child: Icon(Icons.add),

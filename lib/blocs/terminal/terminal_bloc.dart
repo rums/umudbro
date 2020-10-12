@@ -21,8 +21,9 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
 
   void dataHandler(data) {
     final String response = new String.fromCharCodes(data).trim();
-    final String processedData = processResponse(response);
-    this.add(TerminalDataReceived(processedData));
+    // TODO: parse response using GMCP or whatever
+    // final String processedData = processResponse(response);
+    this.add(TerminalDataReceived(response));
   }
 
   void errorHandler(error, StackTrace trace) {

@@ -11,8 +11,8 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
 
   final UmudbroRepository umudbroRepository;
 
-  Future<Server> getActiveServer() async {
-    return umudbroRepository.server(doConnect: 1);
+  Future<Server> getDefaultServer() async {
+    return umudbroRepository.server(new Server(doConnect: 1));
   }
   
   @override
@@ -31,6 +31,9 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
     }
     else if (event is ServerConnected) {
       yield* _mapServerConnectedToState(event);
+    }
+    else if (event is ServerDisconnected) {
+      yield* _mapServerDisconnectedToState(event);
     }
   }
 
@@ -81,8 +84,18 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
       (state as ServersLoadSuccess).servers.map((server) {
         return server.id == event.server.id ? event.server : server;
       }).toList();
-      await _updateServer(event.server);
+      await _setDefaultServer(event.server);
       yield ServerConnectionRequested(event.server, updatedServers);
+    }
+  }
+
+  Stream<ServersState> _mapServerDisconnectedToState(ServerDisconnected event) async* {
+    if (state is ServersLoadSuccess) {
+      final List<Server> updatedServers =
+      (state as ServersLoadSuccess).servers.map((server) {
+        return server.id == event.server.id ? event.server : server;
+      }).toList();
+      yield ServerDisconnectionRequested(event.server, updatedServers);
     }
   }
 
@@ -92,6 +105,10 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
 
   Future _updateServer(Server server) {
     return umudbroRepository.updateServer(server);
+  }
+
+  Future _setDefaultServer(Server server) {
+    return umudbroRepository.setDefaultServer(server);
   }
 
   Future _deleteServer(Server server) {

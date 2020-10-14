@@ -19,6 +19,11 @@ class _MyAppState extends State<MyApp> {
     _serversBloc =
         ServersBloc(umudbroRepository: new SqliteUmudbroRepository());
     _terminalBloc = TerminalBloc(new TerminalInitial(), _serversBloc);
+    _serversBloc.getDefaultServer().then((server) {
+      if (server != null) {
+        _terminalBloc.add(TerminalInitialized(server: server));
+      }
+    });
     super.initState();
   }
 

@@ -29,3 +29,9 @@ class ServerConnected extends ServersEvent {
 
   ServerConnected(this.server);
 }
+
+class ServerDisconnected extends ServersEvent {
+  final Server server;
+
+  ServerDisconnected(this.server);
+}

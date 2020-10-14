@@ -17,3 +17,11 @@ class TerminalDataReceived extends TerminalEvent {
   @override
   String toString() => "DataReceived { data: $data }";
 }
+
+class TerminalDataSent extends TerminalEvent {
+  const TerminalDataSent(this.data) : super();
+  final String data;
+
+  @override
+  String toString() => "DataSent { data: $data }";
+}

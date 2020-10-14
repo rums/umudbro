@@ -21,8 +21,13 @@ class Servers extends StatelessWidget {
                         if (value == "connect") {
                           BlocProvider.of<ServersBloc>(context)
                             ..add(ServerConnected(
-                                Server.from(server, doConnect: true)));
+                                Server.from(server, doConnect: 1)));
                           Navigator.pop(context);
+                        } else if (value == "disconnect") {
+                          BlocProvider.of<ServersBloc>(context)
+                              ..add(ServerDisconnected(
+                                Server.from(server, doConnect: 0)
+                              ));
                         } else if (value == "edit") {
                           showDialog(
                               context: context,
@@ -44,7 +49,20 @@ class Servers extends StatelessWidget {
                               value: "connect",
                               child: Row(children: <Widget>[
                                 Icon(Icons.play_arrow),
-                                Text("Connect"),
+                                Text(
+                                  "Connect",
+                                  style: TextStyle(color: Colors.blue),
+                                ),
+                              ]),
+                            ),
+                            PopupMenuItem<String>(
+                              value: "disconnect",
+                              child: Row(children: <Widget>[
+                                Icon(Icons.stop),
+                                Text(
+                                  "Disconnect",
+                                  style: TextStyle(color: Colors.red),
+                                ),
                               ]),
                             ),
                             PopupMenuItem<String>(

@@ -22,3 +22,9 @@ class ServerConnectionRequested extends ServersState {
 
   ServerConnectionRequested(this.server, servers) : super(servers);
 }
+
+class ServerDisconnectionRequested extends ServersState {
+  final Server server;
+
+  ServerDisconnectionRequested(this.server, servers) : super(servers);
+}

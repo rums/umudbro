@@ -5,9 +5,16 @@ class Server extends Equatable {
   final String name;
   final String address;
   final int port;
-  final bool doConnect;
+  final int doConnect;
+  final String buffer;
 
-  Server({this.id, this.name, this.address, this.port, this.doConnect});
+  Server(
+      {this.id,
+      this.name,
+      this.address,
+      this.port,
+      this.doConnect,
+      this.buffer});
 
   Map<String, dynamic> toMap() {
     return {
@@ -16,16 +23,19 @@ class Server extends Equatable {
       'address': address,
       'port': port,
       'do_connect': doConnect,
+      'buffer': buffer,
     };
   }
 
-  static Server from(Server server, {name, address, port, doConnect}) {
+  static Server from(Server server, {name, address, port, doConnect, buffer}) {
     return new Server(
-        id: server.id,
-        name: name ?? server.name,
-        address: address ?? server.address,
-        port: port ?? server.port,
-        doConnect: doConnect ?? server.doConnect);
+      id: server.id,
+      name: name ?? server.name,
+      address: address ?? server.address,
+      port: port ?? server.port,
+      doConnect: doConnect ?? server.doConnect,
+      buffer: buffer,
+    );
   }
 
   static Server fromMap(Map<String, dynamic> map) {
@@ -35,9 +45,10 @@ class Server extends Equatable {
       address: map['address'],
       port: map['port'],
       doConnect: map['do_connect'],
+      buffer: map['buffer'],
     );
   }
 
   @override
-  List<Object> get props => [id, name, address, port, doConnect];
+  List<Object> get props => [id, name, address, port, doConnect, buffer];
 }

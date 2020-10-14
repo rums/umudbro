@@ -1,29 +1,33 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
+import 'package:sqflite_migration/sqflite_migration.dart';
 import 'dart:async';
 import 'package:umudbro/models/server.dart';
 import 'package:umudbro/repositories/umudbro_repository.dart';
 
 class SqliteUmudbroRepository implements UmudbroRepository {
   final Future<Database> database = getDatabasesPath().then((String path) {
-    return openDatabase(
-      join(path, 'umudbro_database.db'),
-      onCreate: (db, version) {
-        return db.execute(
-          "CREATE TABLE servers(id INTEGER PRIMARY KEY, name TEXT, address TEXT, port INTEGER, do_connect INTEGER)",
-        );
-      },
-      onUpgrade: (db, oldVersion, newVersion) {
-        if (oldVersion == 1 && newVersion == 2) {
-          return db.execute("ALTER TABLE servers ADD COLUMN name text;");
-        } else if (oldVersion == 2 && newVersion == 3) {
-          return db
-              .execute("ALTER TABLE servers ADD COLUMN do_connect INTEGER");
-        }
-      },
-      version: 3,
-    );
+    final initialScript = [
+      '''
+      CREATE TABLE servers(id INTEGER PRIMARY KEY, name TEXT, address TEXT, port INTEGER, do_connect INTEGER);
+      '''
+    ];
+    final migrations = [
+      '''
+      ALTER TABLE servers ADD COLUMN name TEXT;
+      ''',
+      '''
+      ALTER TABLE servers ADD COLUMN do_connect INTEGER;
+      ''',
+      '''
+      ALTER TABLE servers ADD COLUMN buffer TEXT;
+      '''
+    ];
+    final config = MigrationConfig(
+        initializationScript: initialScript, migrationScripts: migrations);
+    final String dbPath = join(path, 'umudbro_database.db');
+    return openDatabaseWithMigration(dbPath, config);
   });
 
   @override
@@ -48,12 +52,7 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     final Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query('servers');
     yield List.generate(maps.length, (i) {
-      return Server(
-          id: maps[i]['id'],
-          name: maps[i]['name'],
-          address: maps[i]['address'],
-          port: maps[i]['port'],
-          doConnect: maps[i]['do_connect'] == 1);
+      return Server.fromMap(maps[i]);
     });
   }
 
@@ -70,12 +69,35 @@ class SqliteUmudbroRepository implements UmudbroRepository {
   }
 
   @override
-  Future<Server> server({id, name, address, port, doConnect}) async {
+  Future<void> setDefaultServer(Server server) async {
     final Database db = await database;
 
-    final List<Map<String, dynamic>> maps = await db.query("servers",
-        where: "id = ? or name = ? or address = ? or port = ? or doConnect = ?",
-        whereArgs: [id, name, address, port, doConnect]);
+    await db.update(
+      'servers',
+      {'do_connect': 0},
+      where: "id <> ?",
+      whereArgs: [server.id],
+    );
+    await db.update(
+      'servers',
+      {'do_connect': 1},
+      where: "id = ?",
+      whereArgs: [server.id],
+    );
+  }
+
+  @override
+  Future<Server> server(Server whereServer) async {
+    final Database db = await database;
+    List<MapEntry> filledEntries = whereServer
+        .toMap()
+        .entries
+        .where((element) => element.value != null)
+        .toList();
+    String where = filledEntries.map((e) => "${e.key} = ?").join(" and ");
+    List<dynamic> whereArgs = filledEntries.map((e) => e.value).toList();
+    final List<Map<String, dynamic>> maps =
+        await db.query("servers", where: where, whereArgs: whereArgs);
     if (maps.length > 0) {
       return Server.fromMap(maps.first);
     }

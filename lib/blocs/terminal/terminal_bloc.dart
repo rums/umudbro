@@ -31,15 +31,15 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     final String response = new String.fromCharCodes(data).trim();
     // TODO: parse response using GMCP or whatever
     // final String processedData = processResponse(response);
-    this.add(TerminalDataReceived(response));
+    this.add(TerminalDataReceived(response, type: BufferItemType.ReceivedBufferItem));
   }
 
   void errorHandler(socket, error, StackTrace trace) {
-    add(TerminalDataReceived("An error has been encountered."));
+    add(TerminalDataReceived("An error has been encountered.", type: BufferItemType.InfoBufferItem));
   }
 
   void killSocket(socket, server) {
-    add(TerminalDataReceived("The connection has been closed."));
+    add(TerminalDataReceived("The connection has been closed.", type: BufferItemType.InfoBufferItem));
     sockets.remove(server.id);
     socket.destroy();
   }
@@ -55,16 +55,16 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
               onError: (error, trace) => errorHandler(socket, error, trace),
               onDone: () => killSocket(socket, server),
               cancelOnError: false);
-          add(TerminalDataReceived("Connected to $label!"));
+          add(TerminalDataReceived("Connected to $label!", type: BufferItemType.InfoBufferItem));
         }).catchError((e, StackTrace trace) {
           print("Unable to connect: $e");
-          add(TerminalDataReceived("Could not connect to $label!"));
+          add(TerminalDataReceived("Could not connect to $label!", type: BufferItemType.InfoBufferItem));
         });
         //Connect standard in to the socket
         stdin.listen((data) =>
             socket.write(new String.fromCharCodes(data).trim() + '\n'));
       } else {
-        add(TerminalDataReceived("Already connected to $label!"));
+        add(TerminalDataReceived("Already connected to $label!", type: BufferItemType.InfoBufferItem));
       }
       return true;
     } catch (e) {
@@ -83,22 +83,45 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
       String label =
           event.server.name ?? "${event.server.address}:${event.server.port}";
       _startSocket(event.server, label);
-      List<String> previousBuffer = List<String>.from(
-          event.server.buffer != null ? json.decode(event.server.buffer) : []);
+      final decodedBuffer =
+          event.server.buffer != null ? json.decode(event.server.buffer) : "";
+      List<BufferItem> previousBuffer = List<BufferItem>.from(
+          event.server.buffer != null
+              ? decodedBuffer.map((item) => BufferItem.fromJson(
+                  BufferItemType.fromString(item["itemType"]), item))
+              : []);
       yield TerminalActive(
           server: event.server,
-          buffer: previousBuffer + ["Connecting to $label..."]);
+          buffer: previousBuffer +
+              [new InfoBufferItem(info: "Connecting to $label...")]);
     } else if (event is TerminalDataReceived) {
-      final List<String> buffer = currentState.buffer..add(event.data);
+      BufferItem item = _mapEventToBufferItem(event);
+      final List<BufferItem> buffer = currentState.buffer
+        ..add(item);
       Server server =
           Server.from(currentState.server, buffer: json.encode(buffer));
       serversBloc.add(ServerUpdated(server));
       yield TerminalActive(server: state.server, buffer: buffer);
     } else if (event is TerminalDataSent) {
-      final List<String> buffer = currentState.buffer;
+      final List<BufferItem> buffer = currentState.buffer;
       sendCommand(currentState.server, event.data);
       yield TerminalActive(server: state.server, buffer: buffer);
     }
+  }
+
+  BufferItem _mapEventToBufferItem(TerminalDataReceived event) {
+    BufferItem item;
+    switch (event.type) {
+      case BufferItemType.InfoBufferItem:
+        item = new InfoBufferItem(info: event.data);
+        break;
+      case BufferItemType.ReceivedBufferItem:
+        item = new ReceivedBufferItem(dataReceived: event.data);
+        break;
+      default:
+        item = new InfoBufferItem(info: "");
+    }
+    return item;
   }
 
   void sendCommand(Server server, String data) {

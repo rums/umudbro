@@ -2,7 +2,7 @@ import 'package:umudbro/models/models.dart';
 
 abstract class TerminalState {
   final Server server;
-  final List<String> buffer;
+  final List<BufferItem> buffer;
 
   TerminalState({this.server, this.buffer});
 }
@@ -15,7 +15,7 @@ class TerminalInitial extends TerminalState {
 
 class TerminalActive extends TerminalState {
   final Server server;
-  final List<String> buffer;
+  final List<BufferItem> buffer;
 
   TerminalActive({this.server, this.buffer})
       : super(server: server, buffer: buffer);

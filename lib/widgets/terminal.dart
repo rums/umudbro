@@ -35,9 +35,9 @@ class _TerminalState extends State<Terminal> {
                   child: Wrap(
                     direction: Axis.horizontal,
                       children: state.buffer
-                          .map((data) => Column(
+                          .map((bufferItem) => Column(
                                 children: <Widget>[
-                                  Text(data),
+                                  Text(bufferItem.displayText ?? ""),
                                   Divider(),
                                 ],
                               ))

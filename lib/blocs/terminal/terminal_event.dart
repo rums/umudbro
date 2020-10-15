@@ -11,8 +11,9 @@ class TerminalInitialized extends TerminalEvent {
 }
 
 class TerminalDataReceived extends TerminalEvent {
-  const TerminalDataReceived(this.data) : super();
+  const TerminalDataReceived(this.data, {this.type}) : super();
   final String data;
+  final BufferItemType type;
 
   @override
   String toString() => "DataReceived { data: $data }";

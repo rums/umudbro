@@ -13,10 +13,10 @@ class TerminalInitial extends TerminalState {
   TerminalInitial({this.server}) : super(server: server, buffer: []);
 }
 
-class TerminalActive extends TerminalState {
+class TerminalConnectSuccess extends TerminalState {
   final Server server;
   final List<BufferItem> buffer;
 
-  TerminalActive({this.server, this.buffer})
+  TerminalConnectSuccess({this.server, this.buffer})
       : super(server: server, buffer: buffer);
 }

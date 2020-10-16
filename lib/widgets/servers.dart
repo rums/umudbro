@@ -9,79 +9,13 @@ class Servers extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ServersBloc, ServersState>(
       builder: (context, state) {
-        if (state is ServersLoadSuccess) {
+        if (state is ServerLoadListSuccess) {
           final servers = state.servers;
           return ListView.builder(
             itemCount: servers.length,
             itemBuilder: (_, index) {
               final Server server = servers[index];
-              return Card(
-                  child: PopupMenuButton(
-                      onSelected: (value) {
-                        if (value == "connect") {
-                          BlocProvider.of<ServersBloc>(context)
-                            ..add(ServerConnected(
-                                Server.from(server, doConnect: 1)));
-                          Navigator.pop(context);
-                        } else if (value == "disconnect") {
-                          BlocProvider.of<ServersBloc>(context)
-                              ..add(ServerDisconnected(
-                                Server.from(server, doConnect: 0)
-                              ));
-                        } else if (value == "edit") {
-                          showDialog(
-                              context: context,
-                              builder: (_) {
-                                return BlocProvider.value(
-                                  value: BlocProvider.of<ServersBloc>(context),
-                                  child:
-                                      AddServer(editing: true, server: server),
-                                );
-                              });
-                        } else if (value == "delete") {
-                          BlocProvider.of<ServersBloc>(context)
-                            ..add(ServerDeleted(server));
-                        }
-                      },
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                              value: "connect",
-                              child: Row(children: <Widget>[
-                                Icon(Icons.play_arrow),
-                                Text(
-                                  "Connect",
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ]),
-                            ),
-                            PopupMenuItem<String>(
-                              value: "disconnect",
-                              child: Row(children: <Widget>[
-                                Icon(Icons.stop),
-                                Text(
-                                  "Disconnect",
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ]),
-                            ),
-                            PopupMenuItem<String>(
-                              value: "edit",
-                              child: Row(children: <Widget>[
-                                Icon(Icons.edit),
-                                Text("Edit"),
-                              ]),
-                            ),
-                            PopupMenuItem<String>(
-                                value: "delete",
-                                child: Row(children: <Widget>[
-                                  Icon(Icons.delete),
-                                  Text("Delete"),
-                                ])),
-                          ],
-                      child: ListTile(
-                          title: Text(
-                              "${server.name != null ? "Name: ${server.name}, " : ""}Address: ${server.address}, Port: ${server.port}"))));
+              return ServerItem(server);
             },
           );
         } else {

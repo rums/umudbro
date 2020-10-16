@@ -11,17 +11,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  UmudbroRepository _umudbroRepository;
   ServersBloc _serversBloc;
   TerminalBloc _terminalBloc;
 
   @override
   void initState() {
-    _serversBloc =
-        ServersBloc(umudbroRepository: new SqliteUmudbroRepository());
-    _terminalBloc = TerminalBloc(new TerminalInitial(), _serversBloc);
+    _umudbroRepository = new SqliteUmudbroRepository();
+    _serversBloc = ServersBloc(umudbroRepository: _umudbroRepository);
+    _terminalBloc = TerminalBloc(_serversBloc);
     _serversBloc.getDefaultServer().then((server) {
       if (server != null) {
-        _terminalBloc.add(TerminalInitialized(server: server));
+        _terminalBloc.add(TerminalStarted(server: server));
       }
     });
     super.initState();
@@ -41,23 +42,20 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
           title: 'umudbro',
           theme: ThemeData(
-            // This is the theme of your application.
-            //
-            // Try running your application with "flutter run". You'll see the
-            // application has a blue toolbar. Then, without quitting the app, try
-            // changing the primarySwatch below to Colors.green and then invoke
-            // "hot reload" (press "r" in the console where you ran "flutter run",
-            // or simply save your changes to "hot reload" in a Flutter IDE).
-            // Notice that the counter didn't reset back to zero; the application
-            // is not restarted.
             primarySwatch: Colors.blue,
-            // This makes the visual density adapt to the platform that you run
-            // the app on. For desktop platforms, the controls will be smaller and
-            // closer together (more dense) than on mobile platforms.
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: HomeScreen(title: 'umudbro'),
-          routes: {'/servers': (context) => ServersScreen()}),
+          initialRoute: "/",
+          routes: {
+            '/': (context) => BlocProvider.value(
+                  value: _terminalBloc,
+                  child: HomeScreen(title: 'umudbro',),
+                ),
+            '/servers': (context) => BlocProvider.value(
+                  value: _serversBloc,
+                  child: ServersScreen(),
+                )
+          }),
     );
   }
 }

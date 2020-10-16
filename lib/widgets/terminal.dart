@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:umudbro/blocs/blocs.dart';
+import 'package:umudbro/widgets/widgets.dart';
 
 class Terminal extends StatefulWidget {
   Terminal({Key key, this.buffer}) : super(key: key);
@@ -32,63 +33,47 @@ class _TerminalState extends State<Terminal> {
               Expanded(
                 child: SingleChildScrollView(
                   reverse: true,
-                  child: Wrap(
-                    direction: Axis.horizontal,
-                      children: state.buffer
-                          .map((bufferItem) => Column(
-                                children: <Widget>[
-                                  Text(bufferItem.displayText ?? ""),
-                                  Divider(),
-                                ],
-                              ))
-                          .toList()),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Wrap(
+                        direction: Axis.horizontal,
+                        children: state.buffer
+                            .map((bufferItem) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    TerminalBufferItem(
+                                      bufferItem: bufferItem,
+                                    ),
+                                    Divider(),
+                                  ],
+                                ))
+                            .toList()),
+                  ),
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: commandTextController,
-                      decoration: const InputDecoration(
-                        hintText: "Enter a command",
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: commandTextController,
+                        decoration: const InputDecoration(
+                          hintText: "Enter a command",
+                        ),
                       ),
                     ),
-                  ),
-                  FlatButton(onPressed: () => BlocProvider.of<TerminalBloc>(context).add(TerminalDataSent(commandTextController.text)),
-                      child: Text("Send"))
-                ],
+                    FlatButton(
+                        onPressed: () => BlocProvider.of<TerminalBloc>(context)
+                            .add(TerminalDataSent(commandTextController.text)),
+                        child: Text("Send"))
+                  ],
+                ),
               )
             ],
           ),
         );
       },
     );
-  }
-}
-
-class TerminalFlowDelegate extends FlowDelegate {
-  final Animation<double> menuAnimation;
-
-  TerminalFlowDelegate({this.menuAnimation}) : super(repaint: menuAnimation);
-
-  @override
-  bool shouldRepaint(TerminalFlowDelegate oldDelegate) {
-    return menuAnimation != oldDelegate.menuAnimation;
-  }
-
-  @override
-  void paintChildren(FlowPaintingContext context) {
-    double dx = 0.0;
-    for (int i = 0; i < context.childCount; ++i) {
-      dx = context.getChildSize(i).width * i;
-      context.paintChild(
-        i,
-        transform: Matrix4.translationValues(
-          dx * menuAnimation.value,
-          0,
-          0,
-        ),
-      );
-    }
   }
 }

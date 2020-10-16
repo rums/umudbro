@@ -56,7 +56,7 @@ class InfoBufferItem implements BufferItem {
   InfoBufferItem({this.info});
 
   @override
-  String get displayText => info;
+  String get displayText => info ?? "";
 
   @override
   List<Object> get props => [info];
@@ -82,7 +82,7 @@ class ReceivedBufferItem implements BufferItem {
   ReceivedBufferItem({this.dataReceived});
 
   @override
-  String get displayText => dataReceived;
+  String get displayText => dataReceived ?? "";
 
   @override
   List<Object> get props => [dataReceived];
@@ -95,6 +95,31 @@ class ReceivedBufferItem implements BufferItem {
 
   @override
   BufferItemType get itemType => BufferItemType.ReceivedBufferItem;
+
+  @override
+  bool get stringify => true;
+}
+
+@JsonSerializable()
+class SentBufferItem implements BufferItem {
+  final String dataSent;
+
+  SentBufferItem({this.dataSent});
+
+  @override
+  String get displayText => dataSent ?? "";
+
+  @override
+  List<Object> get props => [dataSent];
+
+  factory SentBufferItem.fromJson(Map<String, dynamic> json) =>
+      _$SentBufferItemFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$SentBufferItemToJson(this)..putIfAbsent("itemType", () => itemType);
+
+  @override
+  BufferItemType get itemType => BufferItemType.SentBufferItem;
 
   @override
   bool get stringify => true;

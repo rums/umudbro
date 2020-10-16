@@ -7,7 +7,7 @@ import 'package:umudbro/repositories/umudbro_repository.dart';
 import 'servers.dart';
 
 class ServersBloc extends Bloc<ServersEvent, ServersState> {
-  ServersBloc({@required this.umudbroRepository}) : super(InitialServersState(new List<Server>()));
+  ServersBloc({@required this.umudbroRepository}) : super(ServerInitial());
 
   final UmudbroRepository umudbroRepository;
 
@@ -40,7 +40,7 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
   Stream<ServersState> _mapServersLoadedToState() async* {
     try {
       final servers = await this.umudbroRepository.servers().first;
-      yield ServersLoadSuccess(
+      yield ServerLoadListSuccess(
         servers
       );
     }
@@ -49,53 +49,49 @@ class ServersBloc extends Bloc<ServersEvent, ServersState> {
   }
 
   Stream<ServersState> _mapServerAddedToState(ServerAdded event) async* {
-    if (state is ServersLoadSuccess) {
+    if (state is ServerLoadListSuccess) {
       final List<Server> updatedServers =
-          List.from((state as ServersLoadSuccess).servers)..add(event.server);
+          List.from((state as ServerLoadListSuccess).servers)..add(event.server);
       await _addServer(event.server);
-      yield ServersLoadSuccess(updatedServers);
+      yield ServerLoadListSuccess(updatedServers);
     }
   }
 
   Stream<ServersState> _mapServerDeletedToState(ServerDeleted event) async* {
-    if (state is ServersLoadSuccess) {
+    if (state is ServerLoadListSuccess) {
       final List<Server> updatedServers =
-      (state as ServersLoadSuccess).servers
+      (state as ServerLoadListSuccess).servers
         .where((server) => server.id != event.server.id).toList();
       _deleteServer(event.server);
-      yield ServersLoadSuccess(updatedServers);
+      yield ServerLoadListSuccess(updatedServers);
     }
   }
 
   Stream<ServersState> _mapServerUpdatedToState(ServerUpdated event) async* {
-    if (state is ServersLoadSuccess) {
+    if (state is ServerLoadListSuccess) {
       final List<Server> updatedServers =
-      (state as ServersLoadSuccess).servers.map((server) {
+      (state as ServerLoadListSuccess).servers.map((server) {
         return server.id == event.server.id ? event.server : server;
       }).toList();
       await _updateServer(event.server);
-      yield ServersLoadSuccess(updatedServers);
+      yield ServerLoadListSuccess(updatedServers);
     }
   }
 
   Stream<ServersState> _mapServerConnectedToState(ServerConnected event) async* {
-    if (state is ServersLoadSuccess) {
-      final List<Server> updatedServers =
-      (state as ServersLoadSuccess).servers.map((server) {
-        return server.id == event.server.id ? event.server : server;
-      }).toList();
+    if (state is ServerLoadListSuccess) {
       await _setDefaultServer(event.server);
-      yield ServerConnectionRequested(event.server, updatedServers);
+      yield ServerLoadSuccess(event.server);
     }
   }
 
   Stream<ServersState> _mapServerDisconnectedToState(ServerDisconnected event) async* {
-    if (state is ServersLoadSuccess) {
+    if (state is ServerLoadListSuccess) {
       final List<Server> updatedServers =
-      (state as ServersLoadSuccess).servers.map((server) {
+      (state as ServerLoadListSuccess).servers.map((server) {
         return server.id == event.server.id ? event.server : server;
       }).toList();
-      yield ServerDisconnectionRequested(event.server, updatedServers);
+      yield ServerLoadListSuccess(updatedServers);
     }
   }
 

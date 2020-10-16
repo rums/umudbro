@@ -11,31 +11,28 @@ class ServersScreen extends StatefulWidget {
 class _ServersScreenState extends State<ServersScreen> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ServersBloc, ServersState>(
-      builder: (context, state) => Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text("Servers"),
-          actions: [],
-        ),
-        body: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Servers(),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AddServer();
-                });
-          },
-          tooltip: 'Add server',
-          child: Icon(Icons.add),
-        ), // This trailing comma makes auto-formatting nicer for build methods.
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Servers'),
       ),
-    );
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AddServer();
+              });
+        },
+        tooltip: 'Add server',
+        child: Icon(Icons.add),
+      ),
+      body: BlocBuilder<ServersBloc, ServersState>(
+        builder: (context, state) => Center(
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+            child: Servers(),
+          ), // This trailing comma makes auto-formatting nicer for build methods.
+        ),
+      );
   }
 }

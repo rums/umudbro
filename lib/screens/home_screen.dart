@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:umudbro/blocs/blocs.dart';
-import 'package:umudbro/blocs/terminal/terminal.dart';
 
 import '../widgets/terminal.dart';
 
@@ -31,11 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            BlocBuilder<TerminalBloc, TerminalState>(
-              builder: (context, state) => Terminal(),
-            )
-          ],
+          children: <Widget>[Terminal()],
         ),
       ),
     );

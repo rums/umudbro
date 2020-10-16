@@ -4,16 +4,23 @@ abstract class TerminalEvent {
   const TerminalEvent();
 }
 
-class TerminalInitialized extends TerminalEvent {
+class TerminalStarted extends TerminalEvent {
   final Server server;
 
-  TerminalInitialized({this.server});
+  TerminalStarted({this.server});
+}
+
+class TerminalInfoReceived extends TerminalEvent {
+  const TerminalInfoReceived(this.data) : super();
+  final String data;
+
+  @override
+  String toString() => "DataReceived { data: $data }";
 }
 
 class TerminalDataReceived extends TerminalEvent {
-  const TerminalDataReceived(this.data, {this.type}) : super();
+  const TerminalDataReceived(this.data) : super();
   final String data;
-  final BufferItemType type;
 
   @override
   String toString() => "DataReceived { data: $data }";

@@ -12,17 +12,13 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
   StreamSubscription serversSubscription;
   Map<int, Socket> sockets;
 
-  TerminalBloc(TerminalState initialState, this.serversBloc)
-      : super(initialState) {
+  TerminalBloc(this.serversBloc) : super(TerminalInitial()) {
     sockets = new Map<int, Socket>();
     serversSubscription = serversBloc.listen((state) {
-      if (state is ServerConnectionRequested) {
+      if (state is ServerLoadSuccess) {
         serversBloc.umudbroRepository
             .server(state.server)
-            .then((server) => add(TerminalInitialized(server: server)));
-      } else if (state is ServerDisconnectionRequested) {
-        Socket socket = sockets[state.server.id];
-        killSocket(socket, state.server);
+            .then((server) => add(TerminalStarted(server: server)));
       }
     });
   }
@@ -31,15 +27,15 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     final String response = new String.fromCharCodes(data).trim();
     // TODO: parse response using GMCP or whatever
     // final String processedData = processResponse(response);
-    this.add(TerminalDataReceived(response, type: BufferItemType.ReceivedBufferItem));
+    this.add(TerminalDataReceived(response));
   }
 
   void errorHandler(socket, error, StackTrace trace) {
-    add(TerminalDataReceived("An error has been encountered.", type: BufferItemType.InfoBufferItem));
+    add(TerminalDataReceived("An error has been encountered."));
   }
 
   void killSocket(socket, server) {
-    add(TerminalDataReceived("The connection has been closed.", type: BufferItemType.InfoBufferItem));
+    add(TerminalDataReceived("The connection has been closed."));
     sockets.remove(server.id);
     socket.destroy();
   }
@@ -55,16 +51,16 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
               onError: (error, trace) => errorHandler(socket, error, trace),
               onDone: () => killSocket(socket, server),
               cancelOnError: false);
-          add(TerminalDataReceived("Connected to $label!", type: BufferItemType.InfoBufferItem));
+          add(TerminalDataReceived("Connected to $label!"));
         }).catchError((e, StackTrace trace) {
           print("Unable to connect: $e");
-          add(TerminalDataReceived("Could not connect to $label!", type: BufferItemType.InfoBufferItem));
+          add(TerminalDataReceived("Could not connect to $label!"));
         });
         //Connect standard in to the socket
         stdin.listen((data) =>
             socket.write(new String.fromCharCodes(data).trim() + '\n'));
       } else {
-        add(TerminalDataReceived("Already connected to $label!", type: BufferItemType.InfoBufferItem));
+        add(TerminalDataReceived("Already connected to $label!"));
       }
       return true;
     } catch (e) {
@@ -79,7 +75,7 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     TerminalEvent event,
   ) async* {
     final currentState = state;
-    if (event is TerminalInitialized) {
+    if (event is TerminalStarted) {
       String label =
           event.server.name ?? "${event.server.address}:${event.server.port}";
       _startSocket(event.server, label);
@@ -90,36 +86,35 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
               ? decodedBuffer.map((item) => BufferItem.fromJson(
                   BufferItemType.fromString(item["itemType"]), item))
               : []);
-      yield TerminalActive(
+      yield TerminalConnectSuccess(
           server: event.server,
           buffer: previousBuffer +
               [new InfoBufferItem(info: "Connecting to $label...")]);
     } else if (event is TerminalDataReceived) {
       BufferItem item = _mapEventToBufferItem(event);
-      final List<BufferItem> buffer = currentState.buffer
-        ..add(item);
+      final List<BufferItem> buffer = currentState.buffer..add(item);
       Server server =
           Server.from(currentState.server, buffer: json.encode(buffer));
       serversBloc.add(ServerUpdated(server));
-      yield TerminalActive(server: state.server, buffer: buffer);
+      yield TerminalConnectSuccess(server: state.server, buffer: buffer);
     } else if (event is TerminalDataSent) {
-      final List<BufferItem> buffer = currentState.buffer;
+      BufferItem item = _mapEventToBufferItem(event);
+      final List<BufferItem> buffer = currentState.buffer..add(item);
       sendCommand(currentState.server, event.data);
-      yield TerminalActive(server: state.server, buffer: buffer);
+      yield TerminalConnectSuccess(server: state.server, buffer: buffer);
     }
   }
 
-  BufferItem _mapEventToBufferItem(TerminalDataReceived event) {
+  BufferItem _mapEventToBufferItem(TerminalEvent event) {
     BufferItem item;
-    switch (event.type) {
-      case BufferItemType.InfoBufferItem:
-        item = new InfoBufferItem(info: event.data);
-        break;
-      case BufferItemType.ReceivedBufferItem:
-        item = new ReceivedBufferItem(dataReceived: event.data);
-        break;
-      default:
-        item = new InfoBufferItem(info: "");
+    if (event is TerminalInfoReceived) {
+      item = new InfoBufferItem(info: event.data);
+    } else if (event is TerminalDataReceived) {
+      item = new ReceivedBufferItem(dataReceived: event.data);
+    } else if (event is TerminalDataSent) {
+      item = new SentBufferItem(dataSent: event.data);
+    } else {
+      item = new InfoBufferItem(info: "");
     }
     return item;
   }

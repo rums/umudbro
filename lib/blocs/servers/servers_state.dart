@@ -1,30 +1,24 @@
 import 'package:umudbro/models/models.dart';
 
 abstract class ServersState {
+  const ServersState();
+}
+
+class ServerInitial extends ServersState {
+  ServerInitial() : super();
+}
+
+class ServerLoadListInProgress extends ServersState {
+  ServerLoadListInProgress() : super();
+}
+
+class ServerLoadListSuccess extends ServersState {
   final List<Server> servers;
-  const ServersState(this.servers);
+  ServerLoadListSuccess(this.servers) : super();
 }
 
-class InitialServersState extends ServersState {
-  InitialServersState(List<Server> servers) : super(servers);
-}
-
-class ServersLoadInProgress extends ServersState {
-  ServersLoadInProgress(List<Server> servers) : super(servers);
-}
-
-class ServersLoadSuccess extends ServersState {
-  ServersLoadSuccess(servers) : super(servers);
-}
-
-class ServerConnectionRequested extends ServersState {
+class ServerLoadSuccess extends ServersState {
   final Server server;
 
-  ServerConnectionRequested(this.server, servers) : super(servers);
-}
-
-class ServerDisconnectionRequested extends ServersState {
-  final Server server;
-
-  ServerDisconnectionRequested(this.server, servers) : super(servers);
+  ServerLoadSuccess(this.server) : super();
 }

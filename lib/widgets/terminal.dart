@@ -25,53 +25,61 @@ class _TerminalState extends State<Terminal> {
   Widget build(BuildContext context) {
     return BlocBuilder<TerminalBloc, TerminalState>(
       builder: (context, state) {
-        return Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  reverse: true,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Wrap(
-                        direction: Axis.horizontal,
-                        children: state.buffer
-                            .map((bufferItem) => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    TerminalBufferItem(
-                                      bufferItem: bufferItem,
-                                    ),
-                                    Divider(),
-                                  ],
-                                ))
-                            .toList()),
-                  ),
+        return Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Wrap(
+                      direction: Axis.horizontal,
+                      children: state.buffer
+                          .map((bufferItem) => Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  TerminalBufferItem(
+                                    bufferItem: bufferItem,
+                                  ),
+                                  Divider(),
+                                ],
+                              ))
+                          .toList()),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: commandTextController,
-                        decoration: const InputDecoration(
-                          hintText: "Enter a command",
-                        ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  PopupMenuButton(itemBuilder: (context) =>
+                  <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: "saveCommand",
+                      child: Row(children: <Widget>[
+                        Icon(Icons.add),
+                        Text("Save command"),
+                      ],),
+                    )
+                  ]),
+                  Expanded(
+                    child: TextField(
+                      controller: commandTextController,
+                      decoration: const InputDecoration(
+                        hintText: "Enter a command",
                       ),
                     ),
-                    FlatButton(
-                        onPressed: () => BlocProvider.of<TerminalBloc>(context)
-                            .add(TerminalDataSent(commandTextController.text)),
-                        child: Text("Send"))
-                  ],
-                ),
-              )
-            ],
-          ),
+                  ),
+                  FlatButton(
+                      onPressed: () => BlocProvider.of<TerminalBloc>(context)
+                          .add(TerminalDataSent(commandTextController.text)),
+                      child: Text("Send"))
+                ],
+              ),
+            )
+          ],
         );
       },
     );

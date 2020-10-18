@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
+
+import 'models.dart';
 
 class Server extends Equatable {
   final int id;
@@ -6,7 +10,7 @@ class Server extends Equatable {
   final String address;
   final int port;
   final int doConnect;
-  final String buffer;
+  final List<BufferItem> buffer;
 
   Server(
       {this.id,
@@ -23,7 +27,7 @@ class Server extends Equatable {
       'address': address,
       'port': port,
       'do_connect': doConnect,
-      'buffer': buffer,
+      'buffer': buffer != null ? json.encode(buffer) : null,
     };
   }
 
@@ -34,7 +38,7 @@ class Server extends Equatable {
       address: address ?? server.address,
       port: port ?? server.port,
       doConnect: doConnect ?? server.doConnect,
-      buffer: buffer,
+      buffer: buffer ?? server.buffer,
     );
   }
 
@@ -45,7 +49,7 @@ class Server extends Equatable {
       address: map['address'],
       port: map['port'],
       doConnect: map['do_connect'],
-      buffer: map['buffer'],
+      buffer: (json.decode(map['buffer']) as List).map((i) => BufferItem.fromJson(BufferItemType.fromString(i['itemType']), i)).toList(),
     );
   }
 

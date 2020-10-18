@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:umudbro/models/models.dart';
-import 'dart:convert';
 
 import '../blocs.dart';
 import 'terminal.dart';
@@ -31,11 +30,11 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
   }
 
   void errorHandler(socket, error, StackTrace trace) {
-    add(TerminalDataReceived("An error has been encountered."));
+    add(TerminalInfoReceived("An error has been encountered."));
   }
 
   void killSocket(socket, server) {
-    add(TerminalDataReceived("The connection has been closed."));
+    add(TerminalInfoReceived("The connection has been closed."));
     sockets.remove(server.id);
     socket.destroy();
   }
@@ -51,16 +50,16 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
               onError: (error, trace) => errorHandler(socket, error, trace),
               onDone: () => killSocket(socket, server),
               cancelOnError: false);
-          add(TerminalDataReceived("Connected to $label!"));
+          add(TerminalInfoReceived("Connected to $label!"));
         }).catchError((e, StackTrace trace) {
           print("Unable to connect: $e");
-          add(TerminalDataReceived("Could not connect to $label!"));
+          add(TerminalInfoReceived("Could not connect to $label!"));
         });
         //Connect standard in to the socket
         stdin.listen((data) =>
             socket.write(new String.fromCharCodes(data).trim() + '\n'));
       } else {
-        add(TerminalDataReceived("Already connected to $label!"));
+        add(TerminalInfoReceived("Already connected to $label!"));
       }
       return true;
     } catch (e) {
@@ -79,22 +78,15 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
       String label =
           event.server.name ?? "${event.server.address}:${event.server.port}";
       _startSocket(event.server, label);
-      final decodedBuffer =
-          event.server.buffer != null ? json.decode(event.server.buffer) : "";
-      List<BufferItem> previousBuffer = List<BufferItem>.from(
-          event.server.buffer != null
-              ? decodedBuffer.map((item) => BufferItem.fromJson(
-                  BufferItemType.fromString(item["itemType"]), item))
-              : []);
       yield TerminalConnectSuccess(
           server: event.server,
-          buffer: previousBuffer +
+          buffer: event.server.buffer +
               [new InfoBufferItem(info: "Connecting to $label...")]);
-    } else if (event is TerminalDataReceived) {
+    } else if (event is TerminalDataReceived || event is TerminalInfoReceived) {
       BufferItem item = _mapEventToBufferItem(event);
       final List<BufferItem> buffer = currentState.buffer..add(item);
       Server server =
-          Server.from(currentState.server, buffer: json.encode(buffer));
+          Server.from(currentState.server, buffer: buffer);
       serversBloc.add(ServerUpdated(server));
       yield TerminalConnectSuccess(server: state.server, buffer: buffer);
     } else if (event is TerminalDataSent) {

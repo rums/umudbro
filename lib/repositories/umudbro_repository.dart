@@ -14,4 +14,12 @@ abstract class UmudbroRepository {
   Future<void> updateServer(Server server);
 
   Future<void> setDefaultServer(Server server);
+
+  Future<void> addCommand(Command command);
+
+  Future<void> deleteCommand(Command command);
+
+  Future<void> updateCommand(Command command);
+
+  Stream<List<Command>> commands();
 }

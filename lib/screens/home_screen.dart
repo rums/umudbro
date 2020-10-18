@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../widgets/terminal.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:umudbro/blocs/blocs.dart';
+import 'package:umudbro/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -28,7 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[Terminal()],
+          children: <Widget>[
+            BlocProvider.value(
+                value: BlocProvider.of<TerminalBloc>(context),
+                child: TerminalStack())
+          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_migration/sqflite_migration.dart';
+import 'package:umudbro/models/command.dart';
 import 'dart:async';
 import 'package:umudbro/models/server.dart';
 import 'package:umudbro/repositories/umudbro_repository.dart';
@@ -102,5 +103,29 @@ class SqliteUmudbroRepository implements UmudbroRepository {
       return Server.fromMap(maps.first);
     }
     return null;
+  }
+
+  @override
+  Future<void> addCommand(Command command) {
+    // TODO: implement addCommand
+    throw UnimplementedError();
+  }
+
+  @override
+  Stream<List<Command>> commands() {
+    // TODO: implement commands
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteCommand(Command command) {
+    // TODO: implement deleteCommand
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateCommand(Command command) {
+    // TODO: implement updateCommand
+    throw UnimplementedError();
   }
 }

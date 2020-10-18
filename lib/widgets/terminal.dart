@@ -36,7 +36,7 @@ class _TerminalState extends State<Terminal> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Wrap(
                       direction: Axis.horizontal,
-                      children: state.buffer
+                      children: state.buffer == null ? [Container()] : state.buffer
                           .map((bufferItem) => Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[

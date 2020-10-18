@@ -15,11 +15,6 @@ class TerminalStack extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               child: Terminal()),
-          Container(
-            width: double.infinity,
-            height: 500,
-            child: MudButtons(),
-          )
         ],
       ),
     );

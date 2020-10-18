@@ -5,14 +5,19 @@ import 'package:umudbro/models/models.dart';
 
 import '../blocs.dart';
 import 'terminal.dart';
+import '../../util/logger.dart';
+import '../../util/telnet_parser.dart';
 
 class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
   final ServersBloc serversBloc;
   StreamSubscription serversSubscription;
   Map<int, Socket> sockets;
+  TelnetParser parser;
 
   TerminalBloc(this.serversBloc) : super(TerminalInitial()) {
     sockets = new Map<int, Socket>();
+    parser = TelnetParser();
+
     serversSubscription = serversBloc.listen((state) {
       if (state is ServerLoadSuccess) {
         serversBloc.umudbroRepository
@@ -22,24 +27,10 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     });
   }
 
+
   void dataHandler(socket, data) {
-    final String response = new String.fromCharCodes(data).trim();
     // TODO: parse response using GMCP or whatever
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // final String processedData = processResponse(response);
-    this.add(TerminalDataReceived(response));
+    this.add(TerminalDataReceived(parser.parse(data)));
   }
 
   void errorHandler(socket, error, StackTrace trace) {
@@ -97,7 +88,7 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
               [new InfoBufferItem(info: "Connecting to $label...")]);
     } else if (event is TerminalDataReceived || event is TerminalInfoReceived) {
       BufferItem item = _mapEventToBufferItem(event);
-      final List<BufferItem> buffer = currentState.buffer..add(item);
+      final List<BufferItem> buffer = currentState.buffer == null ? [] : currentState.buffer..add(item);
       Server server =
           Server.from(currentState.server, buffer: buffer);
       serversBloc.add(ServerUpdated(server));

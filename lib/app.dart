@@ -14,11 +14,13 @@ class _MyAppState extends State<MyApp> {
   UmudbroRepository _umudbroRepository;
   ServersBloc _serversBloc;
   TerminalBloc _terminalBloc;
+  MudCommandsBloc _mudCommandsBloc;
 
   @override
   void initState() {
     _umudbroRepository = new SqliteUmudbroRepository();
     _serversBloc = ServersBloc(umudbroRepository: _umudbroRepository);
+    _mudCommandsBloc = MudCommandsBloc(MudCommandsInitial(), umudbroRepository: _umudbroRepository);
     _terminalBloc = TerminalBloc(_serversBloc);
     _serversBloc.getDefaultServer().then((server) {
       if (server != null) {
@@ -35,9 +37,12 @@ class _MyAppState extends State<MyApp> {
         BlocProvider<ServersBloc>(
           create: (context) => _serversBloc,
         ),
+        BlocProvider<MudCommandsBloc>(
+          create: (context) => _mudCommandsBloc,
+        ),
         BlocProvider<TerminalBloc>(
           create: (context) => _terminalBloc,
-        )
+        ),
       ],
       child: MaterialApp(
           title: 'umudbro',
@@ -47,10 +52,7 @@ class _MyAppState extends State<MyApp> {
           ),
           initialRoute: "/",
           routes: {
-            '/': (context) => BlocProvider.value(
-                  value: _terminalBloc,
-                  child: HomeScreen(title: 'umudbro',),
-                ),
+            '/':(context) => HomeScreen(title: 'umudbro',),
             '/servers': (context) => BlocProvider.value(
                   value: _serversBloc,
                   child: ServersScreen(),

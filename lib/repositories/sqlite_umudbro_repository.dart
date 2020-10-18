@@ -2,7 +2,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_migration/sqflite_migration.dart';
-import 'package:umudbro/models/command.dart';
+import 'package:tuple/tuple.dart';
+import 'package:umudbro/models/mud_command.dart';
+import 'package:umudbro/models/mud_command_page.dart';
 import 'dart:async';
 import 'package:umudbro/models/server.dart';
 import 'package:umudbro/repositories/umudbro_repository.dart';
@@ -31,6 +33,7 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     return openDatabaseWithMigration(dbPath, config);
   });
 
+  // servers
   @override
   Future<void> addServer(Server server) async {
     final Database db = await database;
@@ -105,27 +108,82 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     return null;
   }
 
+  // mud commands
   @override
-  Future<void> addCommand(Command command) {
+  Future<void> addMudCommand(MudCommand command) {
     // TODO: implement addCommand
     throw UnimplementedError();
   }
 
   @override
-  Stream<List<Command>> commands() {
+  Stream<List<MudCommand>> mudCommands() {
     // TODO: implement commands
     throw UnimplementedError();
   }
 
   @override
-  Future<void> deleteCommand(Command command) {
+  Future<void> deleteMudCommand(MudCommand command) {
     // TODO: implement deleteCommand
     throw UnimplementedError();
   }
 
   @override
-  Future<void> updateCommand(Command command) {
+  Future<void> updateMudCommand(MudCommand command) {
     // TODO: implement updateCommand
     throw UnimplementedError();
+  }
+
+  // mud command pages
+  @override
+  Future<void> addMudCommandPage(MudCommandPage command) {
+    // TODO: implement addMudCommandPage
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteMudCommandPage(MudCommandPage command) {
+    // TODO: implement deleteMudCommandPage
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MudCommand> mudCommand(MudCommand mudCommand) {
+    // TODO: implement mudCommand
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MudCommandPage> mudCommandPage(MudCommandPage mudCommand) {
+    return UmudbroStubs().mudCommandPageStub();
+  }
+
+  @override
+  Stream<List<MudCommandPage>> mudCommandPages() {
+    // TODO: implement mudCommandPages
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateMudCommandPage(MudCommandPage command) {
+    // TODO: implement updateMudCommandPage
+    throw UnimplementedError();
+  }
+}
+
+class UmudbroStubs {
+  Future<MudCommandPage> mudCommandPageStub() async {
+    return MudCommandPage(id: 1, columnCount: 3, mudCommandSlots: <MudCommandSlot>[
+      MudCommandSlot(mudCommand:
+        MudCommand(
+          id: 1,
+          name: "look name",
+          commandText: "look",
+          tags: ["thing1", "thing2"],
+        ),
+        gridLocation: Tuple2(1, 1),
+        backgroundColor: "#ffffff",
+        foregroundColor: "#000000",
+      ),
+    ]);
   }
 }

@@ -4,7 +4,7 @@ import 'package:umudbro/blocs/blocs.dart';
 import 'package:umudbro/models/models.dart';
 
 class AddCommand extends StatefulWidget {
-  final Command command;
+  final MudCommand command;
   final bool editing;
 
   const AddCommand({Key key, this.command, this.editing}) : super(key: key);
@@ -14,7 +14,7 @@ class AddCommand extends StatefulWidget {
 
 class _AddCommandState extends State<AddCommand> {
   static final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  Command get _command => widget.command;
+  MudCommand get _command => widget.command;
   bool get editing => widget.editing;
   String _name;
   String _commandText;
@@ -62,13 +62,13 @@ class _AddCommandState extends State<AddCommand> {
                   onPressed: () {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
-                      Command command = Command.from(
+                      MudCommand command = MudCommand.from(
                         _command,
                         name: _name,
                         commandText: _commandText,
                       );
-                        BlocProvider.of<CommandsBloc>(context)
-                            .add(CommandSaved(command));
+                        BlocProvider.of<MudCommandsBloc>(context)
+                            .add(MudCommandSaved(command));
                       Navigator.pop(context, true);
                     }
                   },

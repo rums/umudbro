@@ -15,11 +15,23 @@ abstract class UmudbroRepository {
 
   Future<void> setDefaultServer(Server server);
 
-  Future<void> addCommand(Command command);
+  Future<void> addMudCommand(MudCommand command);
 
-  Future<void> deleteCommand(Command command);
+  Future<void> deleteMudCommand(MudCommand command);
 
-  Future<void> updateCommand(Command command);
+  Future<void> updateMudCommand(MudCommand command);
 
-  Stream<List<Command>> commands();
+  Stream<List<MudCommand>> mudCommands();
+
+  Future<MudCommand> mudCommand(MudCommand mudCommand);
+
+  Future<void> addMudCommandPage(MudCommandPage command);
+
+  Future<void> deleteMudCommandPage(MudCommandPage command);
+
+  Future<void> updateMudCommandPage(MudCommandPage command);
+
+  Stream<List<MudCommandPage>> mudCommandPages();
+
+  Future<MudCommandPage> mudCommandPage(MudCommandPage mudCommand);
 }

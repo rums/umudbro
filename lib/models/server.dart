@@ -33,12 +33,12 @@ class Server extends Equatable {
 
   static Server from(Server server, {name, address, port, doConnect, buffer}) {
     return new Server(
-      id: server.id,
-      name: name ?? server.name,
-      address: address ?? server.address,
+      id: server?.id,
+      name: name ?? server?.name,
+      address: address ?? server?.address,
       port: port ?? server.port,
-      doConnect: doConnect ?? server.doConnect,
-      buffer: buffer ?? server.buffer,
+      doConnect: doConnect ?? server?.doConnect,
+      buffer: buffer ?? server?.buffer,
     );
   }
 
@@ -49,7 +49,7 @@ class Server extends Equatable {
       address: map['address'],
       port: map['port'],
       doConnect: map['do_connect'],
-      buffer: (json.decode(map['buffer']) as List).map((i) => BufferItem.fromJson(BufferItemType.fromString(i['itemType']), i)).toList(),
+      buffer: map['buffer'] != null ? (json.decode(map['buffer']) as List).map((i) => BufferItem.fromJson(BufferItemType.fromString(i['itemType']), i)).toList() : null,
     );
   }
 

@@ -18,12 +18,6 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     ];
     final migrations = [
       '''
-      ALTER TABLE servers ADD COLUMN name TEXT;
-      ''',
-      '''
-      ALTER TABLE servers ADD COLUMN do_connect INTEGER;
-      ''',
-      '''
       ALTER TABLE servers ADD COLUMN buffer TEXT;
       '''
     ];

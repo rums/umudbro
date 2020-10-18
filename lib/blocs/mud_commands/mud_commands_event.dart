@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:umudbro/models/mud_command.dart';
+import 'package:umudbro/models/mud_command_page.dart';
 
 @immutable
 abstract class MudCommandsEvent {}
@@ -17,4 +18,11 @@ class MudCommandSaved extends MudCommandsEvent {
   final MudCommand command;
 
   MudCommandSaved(this.command);
+}
+
+class MudCommandsPageSwiped extends MudCommandsEvent {
+  final MudCommandPage page;
+  final int direction;
+
+  MudCommandsPageSwiped(this.page, this.direction);
 }

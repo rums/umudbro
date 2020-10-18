@@ -16,8 +16,8 @@ class MudCommandPage extends Equatable {
 class MudCommandSlot extends Equatable {
   final MudCommand mudCommand;
   final Tuple2<int, int> gridLocation;
-  final String backgroundColor;
-  final String foregroundColor;
+  final int backgroundColor;
+  final int foregroundColor;
 
   MudCommandSlot({this.mudCommand, this.gridLocation, this.backgroundColor, this.foregroundColor});
 

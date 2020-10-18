@@ -53,10 +53,7 @@ class _MyAppState extends State<MyApp> {
           initialRoute: "/",
           routes: {
             '/':(context) => HomeScreen(title: 'umudbro',),
-            '/servers': (context) => BlocProvider.value(
-                  value: _serversBloc,
-                  child: ServersScreen(),
-                )
+            '/servers': (context) => ServersScreen(),
           }),
     );
   }

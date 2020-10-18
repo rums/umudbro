@@ -20,6 +20,9 @@ class MudCommandsBloc extends Bloc<MudCommandsEvent, MudCommandsState> {
     else if (event is MudCommandSaved) {
       yield* _mapMudCommandSavedToState(event);
     }
+    else if (event is MudCommandsPageSwiped) {
+      yield* _mapMudCommandsPageSwipedToState(event);
+    }
   }
 
   Stream<MudCommandsState> _mapMudCommandsPageLoadToState(MudCommandsPageLoad event) async* {
@@ -29,6 +32,11 @@ class MudCommandsBloc extends Bloc<MudCommandsEvent, MudCommandsState> {
 
   Stream<MudCommandsState> _mapMudCommandSavedToState(MudCommandSaved event) async* {
     await _saveCommand(event.command);
+    final MudCommandPage page = await umudbroRepository.mudCommandPage(MudCommandPage());
+    yield MudCommandsLoadPageSuccess([page]);
+  }
+
+  Stream<MudCommandsState> _mapMudCommandsPageSwipedToState(MudCommandsPageSwiped event) async* {
     final MudCommandPage page = await umudbroRepository.mudCommandPage(MudCommandPage());
     yield MudCommandsLoadPageSuccess([page]);
   }

@@ -10,25 +10,29 @@ class MudButtons extends StatelessWidget {
         builder: (context, state) {
       if (state is MudCommandsLoadPageSuccess) {
         final currentPage = state.mudCommandPage[0];
-        return GridView.builder(
-          gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: currentPage.columnCount,
+        return GestureDetector(
+          onHorizontalDragEnd: (details) => BlocProvider.of<MudCommandsBloc>(context).add(MudCommandsPageSwiped(currentPage, 1)),
+          child: GridView.builder(
+            gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: currentPage.columnCount,
+            ),
+            itemBuilder: (context, index) {
+              final int column = index % currentPage.columnCount;
+              final int row = index ~/ currentPage.columnCount;
+              final MudCommandSlot slot = currentPage.mudCommandSlots.firstWhere(
+                  (s) =>
+                      s.gridLocation.item1 == row &&
+                      s.gridLocation.item2 == column, orElse: () => null,);
+              if (slot != null) {
+                return RaisedButton(
+                  color: Color(slot.backgroundColor).withOpacity(0.2),
+                  child: Text(slot.mudCommand.name),
+                  onPressed: () => null,
+                );
+              }
+              return Container();
+            },
           ),
-          itemBuilder: (context, index) {
-            final int column = index % currentPage.columnCount;
-            final int row = index ~/ currentPage.columnCount;
-            final MudCommandSlot slot = currentPage.mudCommandSlots.firstWhere(
-                (s) =>
-                    s.gridLocation.item1 == row &&
-                    s.gridLocation.item2 == column, orElse: () => null,);
-            if (slot != null) {
-              return RaisedButton(
-                child: Text(slot.mudCommand.name),
-                onPressed: () => null,
-              );
-            }
-            return Container();
-          },
         );
       }
       return GridView.count(crossAxisCount: 1);

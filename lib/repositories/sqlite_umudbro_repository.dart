@@ -172,18 +172,43 @@ class SqliteUmudbroRepository implements UmudbroRepository {
 
 class UmudbroStubs {
   Future<MudCommandPage> mudCommandPageStub() async {
-    return MudCommandPage(id: 1, columnCount: 3, mudCommandSlots: <MudCommandSlot>[
-      MudCommandSlot(mudCommand:
-        MudCommand(
-          id: 1,
-          name: "look name",
-          commandText: "look",
-          tags: ["thing1", "thing2"],
-        ),
-        gridLocation: Tuple2(1, 1),
-        backgroundColor: "#ffffff",
-        foregroundColor: "#000000",
-      ),
-    ]);
+    return MudCommandPage(
+        id: 1,
+        columnCount: 3,
+        mudCommandSlots: <MudCommandSlot>[
+          MudCommandSlot(
+            mudCommand: MudCommand(
+              id: 1,
+              name: "look",
+              commandText: "look",
+              tags: ["basics"],
+            ),
+            gridLocation: Tuple2(1, 1),
+            backgroundColor: 0xff0000ff,
+            foregroundColor: 0xff000000,
+          ),
+          MudCommandSlot(
+            mudCommand: MudCommand(
+              id: 2,
+              name: "inventory",
+              commandText: "inventory",
+              tags: ["basics"],
+            ),
+            gridLocation: Tuple2(1, 2),
+            backgroundColor: 0xff00ff00,
+            foregroundColor: 0xff000000,
+          ),
+          MudCommandSlot(
+            mudCommand: MudCommand(
+              id: 3,
+              name: "kill all",
+              commandText: "kill all",
+              tags: ["basics"],
+            ),
+            gridLocation: Tuple2(2, 2),
+            backgroundColor: 0xffff0000,
+            foregroundColor: 0xff000000,
+          ),
+        ]);
   }
 }

@@ -25,6 +25,19 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
   void dataHandler(socket, data) {
     final String response = new String.fromCharCodes(data).trim();
     // TODO: parse response using GMCP or whatever
+
+
+
+
+
+
+
+
+
+
+
+
+
     // final String processedData = processResponse(response);
     this.add(TerminalDataReceived(response));
   }
@@ -80,7 +93,7 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
       _startSocket(event.server, label);
       yield TerminalConnectSuccess(
           server: event.server,
-          buffer: event.server.buffer +
+          buffer: event.server.buffer == null ? null : event.server.buffer +
               [new InfoBufferItem(info: "Connecting to $label...")]);
     } else if (event is TerminalDataReceived || event is TerminalInfoReceived) {
       BufferItem item = _mapEventToBufferItem(event);

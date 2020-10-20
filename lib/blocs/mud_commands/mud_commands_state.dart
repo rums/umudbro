@@ -9,7 +9,9 @@ class MudCommandsInitial extends MudCommandsState {}
 class MudCommandsLoadPageInProgress extends MudCommandsState {}
 
 class MudCommandsLoadPageSuccess extends MudCommandsState {
-  final List<MudCommandPage> mudCommandPage;
+  final List<MudCommandPage> mudCommandPages;
+  final int currentPage;
+  final bool editing;
 
-  MudCommandsLoadPageSuccess(this.mudCommandPage);
+  MudCommandsLoadPageSuccess(this.mudCommandPages, this.currentPage, {this.editing = false});
 }

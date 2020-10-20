@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 
 import 'package:equatable/equatable.dart';
 
+part 'mud_command.g.dart';
+
+@JsonSerializable()
 class MudCommand extends Equatable {
+  static const TABLE = 'mud_commands';
   final int id;
   final String name;
   final String commandText;
@@ -17,8 +22,8 @@ class MudCommand extends Equatable {
     return {
       'id': id,
       'name': name,
-      'commandText': commandText,
-      'tags': tags,
+      'command_text': commandText,
+      'tags': json.encode(tags ?? []),
     };
   }
 
@@ -26,17 +31,27 @@ class MudCommand extends Equatable {
     return new MudCommand(
       id: map['id'],
       name: map['name'],
-      commandText: map['commandText'],
-      tags: json.decode(map['tags']),
+      commandText: map['command_text'],
+      tags: map['tags'] != null ? List<String>.from(json.decode(map['tags'])) : [],
     );
   }
 
-  static MudCommand from(MudCommand command, {name, commandText, tags}) {
+  static List<MudCommand> fromMapList(List<Map<String, dynamic>> maps) {
+    return maps.map((map) => MudCommand.fromMap(map)).toList();
+  }
+
+  static MudCommand from(MudCommand command, {id, name, commandText, tags}) {
     return new MudCommand(
-      id: command.id,
-      name: name ?? command.name,
-      commandText: commandText ?? command.commandText,
-      tags: tags ?? command.tags,
+      id: id ?? command?.id,
+      name: name ?? command?.name,
+      commandText: commandText ?? command?.commandText,
+      tags: tags ?? command?.tags,
     );
   }
+
+  @override
+  factory MudCommand.fromJson(Map<String, dynamic> json) =>
+      _$MudCommandFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MudCommandToJson(this);
 }

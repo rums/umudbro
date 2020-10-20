@@ -1,8 +1,9 @@
+import 'dart:math';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_migration/sqflite_migration.dart';
-import 'package:tuple/tuple.dart';
 import 'package:umudbro/models/mud_command.dart';
 import 'package:umudbro/models/mud_command_page.dart';
 import 'dart:async';
@@ -19,6 +20,12 @@ class SqliteUmudbroRepository implements UmudbroRepository {
     final migrations = [
       '''
       ALTER TABLE servers ADD COLUMN buffer TEXT;
+      ''',
+      '''
+      CREATE TABLE mud_commands(id INTEGER PRIMARY KEY, name TEXT, command_text TEXT, tags TEXT);
+      ''',
+      '''
+      CREATE TABLE mud_command_pages(id INTEGER PRIMARY KEY, column_count INTEGER, mud_command_slots TEXT);
       '''
     ];
     final config = MigrationConfig(
@@ -104,70 +111,143 @@ class SqliteUmudbroRepository implements UmudbroRepository {
 
   // mud commands
   @override
-  Future<void> addMudCommand(MudCommand command) {
-    // TODO: implement addCommand
-    throw UnimplementedError();
+  Future<int> addMudCommand(MudCommand command) async {
+    final Database db = await database;
+    return db.insert('mud_commands', command.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   @override
-  Stream<List<MudCommand>> mudCommands() {
-    // TODO: implement commands
-    throw UnimplementedError();
+  Stream<List<MudCommand>> mudCommands() async* {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('mud_commands');
+    yield List.generate(maps.length, (i) {
+      return MudCommand.fromMap(maps[i]);
+    });
   }
 
   @override
-  Future<void> deleteMudCommand(MudCommand command) {
-    // TODO: implement deleteCommand
-    throw UnimplementedError();
+  Future<MudCommand> mudCommand(MudCommand whereCommand) async {
+    final Database db = await database;
+    List<MapEntry> filledEntries = whereCommand
+        .toMap()
+        .entries
+        .where((element) => element.value != null)
+        .toList();
+    String where = filledEntries.map((e) => "${e.key} = ?").join(" and ");
+    List<dynamic> whereArgs = filledEntries.map((e) => e.value).toList();
+    final List<Map<String, dynamic>> maps =
+        await db.query("mud_commands", where: where, whereArgs: whereArgs);
+    if (maps.length > 0) {
+      return MudCommand.fromMap(maps.first);
+    }
+    return null;
   }
 
   @override
-  Future<void> updateMudCommand(MudCommand command) {
-    // TODO: implement updateCommand
-    throw UnimplementedError();
+  Future<void> deleteMudCommand(MudCommand command) async {
+    final Database db = await database;
+    await db.delete(
+      'mud_commands',
+      where: "id = ?",
+      whereArgs: [command.id],
+    );
+  }
+
+  @override
+  Future<int> updateMudCommand(MudCommand command) async {
+    final Database db = await database;
+
+    var id = await db.update(
+      'mud_commands',
+      command.toMap(),
+      where: "id = ?",
+      whereArgs: [command.id],
+    );
+    return id;
   }
 
   // mud command pages
   @override
-  Future<void> addMudCommandPage(MudCommandPage command) {
-    // TODO: implement addMudCommandPage
-    throw UnimplementedError();
+  Future<int> addMudCommandPage(MudCommandPage page) async {
+    final Database db = await database;
+
+    MudCommandPage hydratedPage;
+    List<MudCommandSlot> hydratedSlots = await hydrateSlots(page.mudCommandSlots ?? []);
+    hydratedPage = MudCommandPage.from(page, mudCommandSlots: hydratedSlots);
+    var id = await db.insert('mud_command_pages', hydratedPage.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return id;
   }
 
   @override
-  Future<void> deleteMudCommandPage(MudCommandPage command) {
-    // TODO: implement deleteMudCommandPage
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<MudCommand> mudCommand(MudCommand mudCommand) {
-    // TODO: implement mudCommand
-    throw UnimplementedError();
+  Future<void> deleteMudCommandPage(MudCommandPage page) async {
+    final Database db = await database;
+    await db.delete(
+      'mud_command_pages',
+      where: "id = ?",
+      whereArgs: [page.id],
+    );
   }
 
   @override
   Future<MudCommandPage> mudCommandPage(MudCommandPage mudCommand) {
-    return UmudbroStubs().mudCommandPageStub();
+    return UmudbroStubs().mudCommandPageStub(1);
   }
 
   @override
-  Stream<List<MudCommandPage>> mudCommandPages() {
-    // TODO: implement mudCommandPages
-    throw UnimplementedError();
+  Stream<List<MudCommandPage>> mudCommandPages() async* {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('mud_command_pages');
+    final List<Map<String, dynamic>> commands = await db.query('mud_commands');
+    yield List.generate(maps.length, (i) {
+      return MudCommandPage.fromMap(maps[i], commands);
+    });
   }
 
   @override
-  Future<void> updateMudCommandPage(MudCommandPage command) {
-    // TODO: implement updateMudCommandPage
-    throw UnimplementedError();
+  Future<void> updateMudCommandPage(MudCommandPage page) async {
+    final Database db = await database;
+
+    MudCommandPage hydratedPage;
+    List<MudCommandSlot> hydratedSlots = await hydrateSlots(page.mudCommandSlots ?? []);
+    hydratedPage = MudCommandPage.from(page, mudCommandSlots: hydratedSlots);
+
+    await db.update(
+      'mud_command_pages',
+      hydratedPage.toMap(),
+      where: "id = ?",
+      whereArgs: [page.id],
+    );
+  }
+
+  Future<List<MudCommandSlot>> hydrateSlots(List<MudCommandSlot> slots) async {
+    List<MudCommandSlot> hydratedSlots = [];
+    for (var slot in slots) {
+      if (slot.mudCommand.id == null) {
+        var id = await addMudCommand(slot.mudCommand);
+        hydratedSlots.add(MudCommandSlot.from(slot,
+            mudCommand: MudCommand.from(slot.mudCommand, id: id)));
+      } else {
+        updateMudCommand(slot.mudCommand);
+        hydratedSlots.add(slot);
+      }
+    }
+    return hydratedSlots;
+  }
+
+  Future<int> _addEntity(entity) async {
+    final Database db = await database;
+    var id = await db.insert(entity.table, entity.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return id;
   }
 }
 
 class UmudbroStubs {
-  Future<MudCommandPage> mudCommandPageStub() async {
+  Future<MudCommandPage> mudCommandPageStub(id) async {
     return MudCommandPage(
-        id: 1,
+        id: id,
         columnCount: 3,
         mudCommandSlots: <MudCommandSlot>[
           MudCommandSlot(
@@ -177,9 +257,10 @@ class UmudbroStubs {
               commandText: "look",
               tags: ["basics"],
             ),
-            gridLocation: Tuple2(1, 1),
-            backgroundColor: 0xff0000ff,
-            foregroundColor: 0xff000000,
+            gridRow: Random().nextInt(3),
+            gridColumn: Random().nextInt(3),
+            backgroundColorInt: 0xff00ff00,
+            foregroundColorInt: 0xff000000,
           ),
           MudCommandSlot(
             mudCommand: MudCommand(
@@ -188,9 +269,10 @@ class UmudbroStubs {
               commandText: "inventory",
               tags: ["basics"],
             ),
-            gridLocation: Tuple2(1, 2),
-            backgroundColor: 0xff00ff00,
-            foregroundColor: 0xff000000,
+            gridRow: Random().nextInt(3),
+            gridColumn: Random().nextInt(3),
+            backgroundColorInt: 0xff00ff00,
+            foregroundColorInt: 0xff000000,
           ),
           MudCommandSlot(
             mudCommand: MudCommand(
@@ -199,10 +281,21 @@ class UmudbroStubs {
               commandText: "kill all",
               tags: ["basics"],
             ),
-            gridLocation: Tuple2(2, 2),
-            backgroundColor: 0xffff0000,
-            foregroundColor: 0xff000000,
+            gridRow: Random().nextInt(3),
+            gridColumn: Random().nextInt(3),
+            backgroundColorInt: 0xff00ff00,
+            foregroundColorInt: 0xff000000,
           ),
-        ]);
+        ]..shuffle());
+  }
+
+  Stream<List<MudCommandPage>> mudCommandPagesStub() async* {
+    yield* new Stream.fromIterable([
+      [
+        await mudCommandPageStub(1),
+        await mudCommandPageStub(2),
+        await mudCommandPageStub(3)
+      ]..shuffle()
+    ]);
   }
 }

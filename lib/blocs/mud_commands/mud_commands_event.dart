@@ -14,15 +14,23 @@ class MudCommandPressed extends MudCommandsEvent {
   MudCommandPressed(this.command);
 }
 
-class MudCommandSaved extends MudCommandsEvent {
-  final MudCommand command;
+class MudCommandSlotSaved extends MudCommandsEvent {
+  final MudCommandSlot slot;
 
-  MudCommandSaved(this.command);
+  MudCommandSlotSaved(this.slot);
 }
 
 class MudCommandsPageSwiped extends MudCommandsEvent {
-  final MudCommandPage page;
+  final List<MudCommandPage> pages;
+  final int currentPage;
   final int direction;
 
-  MudCommandsPageSwiped(this.page, this.direction);
+  MudCommandsPageSwiped(this.pages, this.currentPage, this.direction);
+}
+
+class MudCommandsToggleEditPage extends MudCommandsEvent {
+  final List<MudCommandPage> pages;
+  final int currentPage;
+
+  MudCommandsToggleEditPage(this.pages, this.currentPage);
 }

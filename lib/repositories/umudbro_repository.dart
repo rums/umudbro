@@ -25,13 +25,13 @@ abstract class UmudbroRepository {
 
   Future<MudCommand> mudCommand(MudCommand mudCommand);
 
-  Future<void> addMudCommandPage(MudCommandPage command);
+  Future<void> addMudCommandPage(MudCommandPage page);
 
-  Future<void> deleteMudCommandPage(MudCommandPage command);
+  Future<void> deleteMudCommandPage(MudCommandPage page);
 
-  Future<void> updateMudCommandPage(MudCommandPage command);
+  Future<void> updateMudCommandPage(MudCommandPage page);
 
   Stream<List<MudCommandPage>> mudCommandPages();
 
-  Future<MudCommandPage> mudCommandPage(MudCommandPage mudCommand);
+  Future<MudCommandPage> mudCommandPage(MudCommandPage page);
 }

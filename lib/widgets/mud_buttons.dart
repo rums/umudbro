@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:umudbro/blocs/mud_commands/mud_commands.dart';
+import 'package:umudbro/blocs/terminal/terminal.dart';
 import 'package:umudbro/models/models.dart';
 import 'package:umudbro/widgets/add_mud_command.dart';
 
@@ -66,6 +67,7 @@ class MudButtons extends StatelessWidget {
                           column: slot.gridColumn,
                           foreground: slot.foregroundColor,
                           background: slot.backgroundColor,
+                          onPressed: () => BlocProvider.of<TerminalBloc>(context).add(TerminalDataSent(slot.mudCommand.commandText)),
                           onLongPress: () => showUpdateButtonDialog(context, slot, true),
                         );
                       }

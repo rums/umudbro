@@ -26,18 +26,6 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     final String response = new String.fromCharCodes(data).trim();
     // TODO: parse response using GMCP or whatever
 
-
-
-
-
-
-
-
-
-
-
-
-
     // final String processedData = processResponse(response);
     this.add(TerminalDataReceived(response));
   }
@@ -92,21 +80,41 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
           event.server.name ?? "${event.server.address}:${event.server.port}";
       _startSocket(event.server, label);
       yield TerminalConnectSuccess(
-          server: event.server,
-          buffer: event.server.buffer == null ? null : event.server.buffer +
-              [new InfoBufferItem(info: "Connecting to $label...")]);
+        server: event.server,
+        buffer: event.server.buffer == null
+            ? null
+            : event.server.buffer +
+                [new InfoBufferItem(info: "Connecting to $label...")],
+      );
     } else if (event is TerminalDataReceived || event is TerminalInfoReceived) {
-      BufferItem item = _mapEventToBufferItem(event);
-      final List<BufferItem> buffer = currentState.buffer..add(item);
-      Server server =
-          Server.from(currentState.server, buffer: buffer);
-      serversBloc.add(ServerUpdated(server));
-      yield TerminalConnectSuccess(server: state.server, buffer: buffer);
+      if (currentState is TerminalConnectSuccess) {
+        BufferItem item = _mapEventToBufferItem(event);
+        final List<BufferItem> buffer = currentState.buffer..add(item);
+        Server server = Server.from(currentState.server, buffer: buffer);
+        serversBloc.add(ServerUpdated(server));
+        yield TerminalConnectSuccess(
+          server: currentState.server,
+          buffer: buffer,
+        );
+      }
     } else if (event is TerminalDataSent) {
-      BufferItem item = _mapEventToBufferItem(event);
-      final List<BufferItem> buffer = currentState.buffer..add(item);
-      sendCommand(currentState.server, event.data);
-      yield TerminalConnectSuccess(server: state.server, buffer: buffer);
+      if (currentState is TerminalConnectSuccess) {
+        BufferItem item = _mapEventToBufferItem(event);
+        final List<BufferItem> buffer = currentState.buffer..add(item);
+        sendCommand(currentState.server, event.data);
+        yield TerminalConnectSuccess(
+          server: currentState.server,
+          buffer: buffer,
+        );
+      }
+    } else if (event is TerminalToggleOverlay) {
+      if (currentState is TerminalConnectSuccess) {
+        yield TerminalConnectSuccess(
+          server: currentState.server,
+          buffer: currentState.buffer,
+          showOverlay: !currentState.showOverlay,
+        );
+      }
     }
   }
 

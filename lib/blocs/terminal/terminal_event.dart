@@ -33,3 +33,16 @@ class TerminalDataSent extends TerminalEvent {
   @override
   String toString() => "DataSent { data: $data }";
 }
+
+class TerminalToggleCommandBar extends TerminalEvent {
+  final bool forceCommandBar;
+  final bool focusCommandBar;
+
+  TerminalToggleCommandBar({this.forceCommandBar, this.focusCommandBar});
+}
+
+class TerminalToggleOverlay extends TerminalEvent {
+  final bool forceOverlay;
+
+  TerminalToggleOverlay({this.forceOverlay});
+}

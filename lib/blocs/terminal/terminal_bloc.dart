@@ -70,8 +70,6 @@ class TerminalBloc extends Bloc<TerminalEvent, TerminalState> {
     }
   }
 
-  String processResponse(String response) {}
-
   @override
   Stream<TerminalState> mapEventToState(
     TerminalEvent event,
